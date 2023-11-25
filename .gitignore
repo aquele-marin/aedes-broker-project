@@ -1,4 +1,7 @@
 */node_modules
 */build
 .DS_Store
+
+# Python sensor
 venv
+__pycache__
