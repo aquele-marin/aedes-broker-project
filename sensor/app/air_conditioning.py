@@ -1,17 +1,10 @@
 import uuid
+import threading
+import time
 
 
 class AirConditioning:
-    id: str
-    on: bool
-    intensity: int
-    min_intensity: int
-    max_intensity: int
-    temperature: int
-    min_temperature: int
-    max_temperature: int
-    environment_temperature: float
-    max_enviroment_temperature: float
+    ENV_TEMP_CALCULATION : bool = True
 
     def __init__(self, start_intensity=3, start_temperature=21, min_temp=16, max_temp=28, env_temp_start=23, env_max_temp=30) -> None:
         # self.id = str(uuid.uuid4())
@@ -25,7 +18,19 @@ class AirConditioning:
         self.max_temperature = max_temp
         self.environment_temperature = env_temp_start
         self.max_enviroment_temperature = env_max_temp
+        
+        self.ENV_TEMP_CALCULATION = True
+        background_thread_temp_calculation = threading.Thread(target=self.calculate_new_environment_temperature)
+        background_thread_temp_calculation.start()
+        
+    def calculate_new_environment_temperature(self):
+        while self.ENV_TEMP_CALCULATION:
+            result = self.get_new_environment_temperature()
+            self.environment_temperature = result
 
+            # Sleep for one second
+            time.sleep(1)
+        
     def turn_on(self):
         self.on = True
 
@@ -67,10 +72,14 @@ class AirConditioning:
 
         return self.environment_temperature
 
-    # Function to change env temp
-    # Env temp + ((Env temp increases * random) - (( Env Temp - Temperature) * intensity))
-
-    def calculate_new_environment_temperature(self) -> float:
+    def get_new_environment_temperature(self) -> float:
         temperature = self.environment_temperature + \
-            ((1) - (1.2 * (self.environment_temperature - self.temperature) * self.intensity))
+            ((1) - ((float(10 + self.intensity) / 10) * self.on))
+        temperature = round(temperature, 2)
+            
+        if temperature >= self.max_enviroment_temperature:
+            temperature = self.max_enviroment_temperature
+        elif temperature <= self.temperature:
+            temperature = self.temperature
+            
         return temperature
