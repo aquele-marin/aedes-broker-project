@@ -1,0 +1,11 @@
+services:
+  sensor:
+    build: ./sensor
+    ports:
+      - "8000:80"
+  broker:
+    build: ./broker
+  backend:
+    build: ./backend
+  # frontend:
+  #   build: ./frontend
