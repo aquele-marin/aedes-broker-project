@@ -1,13 +1,65 @@
 from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+import asyncio
+import threading
+import time
 
 from .air_conditioning import AirConditioning
 from . import schemas
 
-app = FastAPI()
+run_enviroment_temp_calculation = True
+run_send_environment_temp_to_topic = True
+a = 1
+
 device = AirConditioning()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # print('Before Geral:', AirConditioning.ENV_TEMP_CALCULATION)
+    # print('Before Device:', device.ENV_TEMP_CALCULATION)
+    yield
+    device.ENV_TEMP_CALCULATION = False
+    # print('Before Geral:', AirConditioning.ENV_TEMP_CALCULATION)
+    # print('Before Device:', device.ENV_TEMP_CALCULATION)
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+
+def write_result_to_file(result):
+    # Write the result to a file
+    # with open("result.txt", "a") as file:
+    #     file.write(f"{result}\n")
+    print(result)
+
+
+# def background_task():
+#     global run_enviroment_temp_calculation
+#     while run_enviroment_temp_calculation:
+#         # Your task logic goes here
+#         result = device.environment_temperature
+
+#         # Write the result to a file
+#         write_result_to_file(result)
+
+#         # Sleep for one second
+#         time.sleep(1)
+
+
+# background_thread_temp_calculation = threading.Thread(target=background_task)
+# background_thread_temp_calculation.start()
 
 # RETIRAR ISSO DEPOIS
 device.turn_on()
+
+# @asyncio.coroutine
+def change_environment_temperature():
+    new_temp = device.calculate_new_environment_temperature()
+    device.environment_temperature = new_temp
+    print('Env', str(device.environment_temperature))
+    return device.environment_temperature
+
 
 @app.get('/')
 async def home():
@@ -61,4 +113,12 @@ async def decrease_intensity(id: str, value: int = 1):
     if value < 0:
         raise HTTPException(422, f'Value must be above 0')
     device.set_intensity(device.intensity - value)
+    return device
+
+
+@app.get('/devices/{id}/environment', status_code=200, response_model=schemas.EnvironmentTemp)
+async def get_new_environment_tempearute(id: str):
+    new_temp = device.calculate_new_environment_temperature()
+    device.environment_temperature = new_temp
+    # device.change_environment_temperature(new_temp + device.environment_temperature)
     return device
