@@ -11,19 +11,20 @@ run_enviroment_temp_calculation = True
 run_send_environment_temp_to_topic = True
 a = 1
 
+device = AirConditioning()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global run_enviroment_temp_calculation
-    global run_send_environment_temp_to_topic
-    run_enviroment_temp_calculation = True
-    run_send_environment_temp_to_topic = True
+    # print('Before Geral:', AirConditioning.ENV_TEMP_CALCULATION)
+    # print('Before Device:', device.ENV_TEMP_CALCULATION)
     yield
-    run_enviroment_temp_calculation = False
-    run_send_environment_temp_to_topic = False
+    device.ENV_TEMP_CALCULATION = False
+    # print('Before Geral:', AirConditioning.ENV_TEMP_CALCULATION)
+    # print('Before Device:', device.ENV_TEMP_CALCULATION)
 
 
 app = FastAPI(lifespan=lifespan)
-device = AirConditioning()
+
 
 
 def write_result_to_file(result):
@@ -33,21 +34,21 @@ def write_result_to_file(result):
     print(result)
 
 
-def background_task():
-    global run_enviroment_temp_calculation
-    while run_enviroment_temp_calculation:
-        # Your task logic goes here
-        result = device.environment_temperature
+# def background_task():
+#     global run_enviroment_temp_calculation
+#     while run_enviroment_temp_calculation:
+#         # Your task logic goes here
+#         result = device.environment_temperature
 
-        # Write the result to a file
-        write_result_to_file(result)
+#         # Write the result to a file
+#         write_result_to_file(result)
 
-        # Sleep for one second
-        time.sleep(1)
+#         # Sleep for one second
+#         time.sleep(1)
 
 
-background_thread_temp_calculation = threading.Thread(target=background_task)
-background_thread_temp_calculation.start()
+# background_thread_temp_calculation = threading.Thread(target=background_task)
+# background_thread_temp_calculation.start()
 
 # RETIRAR ISSO DEPOIS
 device.turn_on()
