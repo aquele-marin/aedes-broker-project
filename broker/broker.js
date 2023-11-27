@@ -31,12 +31,14 @@ aedes.authenticate = (client, username, password, callback) => {
   console.log("Authentication failed.");
   return callback(error, false);
 };
+
+
 // authorising client topic to publish a message
 aedes.authorizePublish = (client, packet, callback) => {
   if (packet.topic === "abc") {
     return callback(new Error("wrong topic"));
   }
-  if (packet.topic === "charcha") {
+  if (packet.topic === "room_temperature") {
     packet.payload = Buffer.from("overwrite packet payload");
   }
   callback(null);
