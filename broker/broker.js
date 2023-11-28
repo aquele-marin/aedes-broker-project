@@ -36,13 +36,16 @@ aedes.authenticate = (client, username, password, callback) => {
 // authorising client topic to publish a message
 aedes.authorizePublish = (client, packet, callback) => {
   if (packet.topic === "abc") {
-    return callback(new Error("wrong topic"));
-  }
-  if (packet.topic === "room_temperature") {
-    packet.payload = Buffer.from("overwrite packet payload");
+    console.log(`Client ${client.id} is attempting to publish on topic 'abc'`);
+    // Add any additional authorization logic here
+    if (client.id !== "allowedClient") {
+      console.log(`Authorization failed for client ${client.id}`);
+      return callback(new Error("Unauthorized to publish on this topic"));
+    }
   }
   callback(null);
 };
+
 
 // emitted when a client connects to the broker
 aedes.on("client", function (client) {
