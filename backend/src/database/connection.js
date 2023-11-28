@@ -17,7 +17,7 @@ const RoomTemperatureSchema = new mongoose.Schema({
 });
 
 // Create a Mongoose model for room_temperature
-const RoomTemperatureModel = mongoose.model('RoomTemperature', RoomTemperatureSchema);
+const RoomTemperatureModel = mongoose.model('roomTemperature', RoomTemperatureSchema);
 
 // Define a Mongoose schema for device_status
 const DeviceStatusSchema = new mongoose.Schema({
@@ -30,7 +30,7 @@ const DeviceStatusSchema = new mongoose.Schema({
 });
 
 // Create a Mongoose model for device_status
-const DeviceStatusModel = mongoose.model('DeviceStatus', DeviceStatusSchema);
+const DeviceStatusModel = mongoose.model('deviceStatus', DeviceStatusSchema);
 
 async function writeRoomTemperatureToDatabase(device_id, room_temperature) {
   try {
