@@ -1,14 +1,13 @@
 const mongoose = require("mongoose");
 
 const uri =
-  "mongodb://127.0.0.1:27017/device?retryWrites=true&w=majority";
+  "mongodb://f:f@127.0.0.1:27017/?authMechanism=DEFAULT";
 
 const db = mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
-// Define a Mongoose schema for room_temperature
 const RoomTemperatureSchema = new mongoose.Schema({
   received_at: { type: Date, default: Date.now },
   sent_at: { type: Date, required: true },
@@ -16,10 +15,8 @@ const RoomTemperatureSchema = new mongoose.Schema({
   room_temperature: { type: Number, required: true }
 });
 
-// Create a Mongoose model for room_temperature
 const RoomTemperatureModel = mongoose.model('roomTemperature', RoomTemperatureSchema);
 
-// Define a Mongoose schema for device_status
 const DeviceStatusSchema = new mongoose.Schema({
   received_at: { type: Date, default: Date.now },
   sent_at: { type: Date, required: true },
@@ -29,35 +26,38 @@ const DeviceStatusSchema = new mongoose.Schema({
   intensity: { type: Number, required: true }
 });
 
-// Create a Mongoose model for device_status
 const DeviceStatusModel = mongoose.model('deviceStatus', DeviceStatusSchema);
 
-async function writeRoomTemperatureToDatabase(device_id, room_temperature) {
+async function writeRoomTemperatureToDatabase(sent_at, device_id, room_temperature) {
   try {
-      const roomTemperatureDoc = new RoomTemperatureModel({
-          device_id: device_id,
-          room_temperature: room_temperature
-      });
-      await roomTemperatureDoc.save();
-      console.log('Room temperature written to MongoDB successfully.');
+    const roomTemperatureDoc = new RoomTemperatureModel({
+      sent_at: sent_at,
+      device_id: device_id,
+      room_temperature: room_temperature
+    });
+    await roomTemperatureDoc.save().then(savedUser => {
+      console.log('User saved:', savedUser);
+    });
+    console.log('Escreveu o log');
   } catch (error) {
-      console.error('Error writing room temperature to MongoDB:', error);
+    console.error('Falhou no log', error);
   }
 }
 
 async function writeDeviceStatusToDatabase(device_id, is_on, temperature, intensity) {
   try {
-      const deviceStatusDoc = new DeviceStatusModel({
-          device_id: device_id,
-          is_on: is_on,
-          temperature: temperature,
-          intensity: intensity
-      });
-      await deviceStatusDoc.save();
-      console.log('Device status written to MongoDB successfully.');
+    const deviceStatusDoc = new DeviceStatusModel({
+      device_id: device_id,
+      is_on: is_on,
+      temperature: temperature,
+      intensity: intensity
+    });
+    await deviceStatusDoc.save();
+    console.log('Escreveu status');
   } catch (error) {
-      console.error('Error writing device status to MongoDB:', error);
+    console.error('Falhou no status', error);
   }
 }
 
+console.log("Rodou")
 module.exports = { mongoose, writeRoomTemperatureToDatabase, writeDeviceStatusToDatabase };
