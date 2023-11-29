@@ -34,13 +34,13 @@ async def turn_off_device(id: str):
     return device
 
 
-@app.post('/devices/{id}/temperature', status_code=200, response_model=schemas.DeviceStatus)
-async def set_new_temperature_for_device(id: str, new_temperature: int):
-    try:
-        device.set_temperature(new_temperature)
-    except DeviceIsNotTurnedOnException as e:
-        raise HTTPException(409, str(e))
-    return device
+# @app.get('/devices/{id}/temperature/{new_temperature}', status_code=200, response_model=schemas.DeviceStatus)
+# async def set_new_temperature_for_device(id: str, new_temperature: int):
+#     try:
+#         device.set_temperature(new_temperature)
+#     except DeviceIsNotTurnedOnException as e:
+#         raise HTTPException(409, str(e))
+#     return device
 
 
 @app.get('/devices/{id}/temperature/increase', status_code=200, response_model=schemas.DeviceStatus)
