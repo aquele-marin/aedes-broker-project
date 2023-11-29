@@ -1,11 +1,19 @@
 const mongoose = require("mongoose");
 
-const uri =
-  "mongodb://f:f@127.0.0.1:27017/?authMechanism=DEFAULT";
 
-const db = mongoose.connect(uri, {
+
+const databaseHost = process.env.DATABASE_HOST || '127.0.0.1';
+const databasePort = process.env.DATABASE_PORT || '27017';
+const databaseUser = process.env.DATABASE_USER || 'sensor';
+const databasePwd = process.env.DATABASE_PWD || 'sensor';
+const databaseDefault = process.env.DATABASE_DEFAULT || 'sensor';
+const uri =
+  `mongodb://${databaseUser}:${databasePwd}@${databaseHost}:${databasePort}?authMechanism=DEFAULT`;
+
+const connection = mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  dbName: databaseDefault
 });
 
 const RoomTemperatureSchema = new mongoose.Schema({
@@ -35,18 +43,16 @@ async function writeRoomTemperatureToDatabase(sent_at, device_id, room_temperatu
       device_id: device_id,
       room_temperature: room_temperature
     });
-    await roomTemperatureDoc.save().then(savedUser => {
-      console.log('User saved:', savedUser);
-    });
     console.log('Escreveu o log');
   } catch (error) {
     console.error('Falhou no log', error);
   }
 }
 
-async function writeDeviceStatusToDatabase(device_id, is_on, temperature, intensity) {
+async function writeDeviceStatusToDatabase(sent_at, device_id, is_on, temperature, intensity) {
   try {
     const deviceStatusDoc = new DeviceStatusModel({
+      sent_at: sent_at,
       device_id: device_id,
       is_on: is_on,
       temperature: temperature,
