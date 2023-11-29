@@ -4,6 +4,12 @@ const server = require("net").createServer(aedes.handle);
 const httpServer = require("http").createServer();
 const ws = require("websocket-stream");
 
+
+const brokerHost = process.env.BROKER_HOST || 'localhost';
+
+const brokerUsername = process.env.BROKER_USER || 'broker_user'
+const brokerPassword = process.env.BROKER_USER || 'broker_pwd'
+
 const MQTT_Port = 1884;
 const wsPort = 8884;
 
@@ -22,7 +28,7 @@ httpServer.listen(wsPort, function () {
 // authentication
 aedes.authenticate = (client, username, password, callback) => {
   password = Buffer.from(password, "base64").toString();
-  if (username === "asd" && password === "asdasd") {
+  if (username === brokerUsername && password === brokerPassword) {
     return callback(null, true);
   }
   const error = new Error(
