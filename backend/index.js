@@ -6,6 +6,7 @@ const WebSocket = require('ws');
 const { mongoose, writeRoomTemperatureToDatabase, writeDeviceStatusToDatabase } = require("./src/database/connection");
 const Test = require("./src/models/test");
 const cors = require("cors");
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
@@ -58,17 +59,89 @@ client.on('message', async (receivedTopic, message) => {
 //   });
 // });
 
+const air_conditioning_host = "http://127.0.0.1:8000"
+
 // API
 app.get("/", async (req, res) => {
   console.log("Received request for URL: " + req.url);
 
-  const test = await Test.find();
-  console.log(test);
+  // const test = await Test.find();
+  // console.log(test);
 
-  return res.send(test);
+  return res.status(200).send('Hi');
 });
 
-// app.listen(3000, "127.0.0.1");
-server.listen(3000, () => {
-  console.log(`Server listening on port ${3000}`);
-});
+
+app.get("/devices/:id/turnon", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await axios.get(`${air_conditioning_host}/devices/${id}/turnon`);
+    const responseData = response.data;
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+app.get("/devices/:id/turnoff", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await axios.get(`${air_conditioning_host}/devices/${id}/turnoff`);
+    const responseData = response.data;
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+app.get("/devices/:id/temperature/increase", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await axios.get(`${air_conditioning_host}/devices/${id}/temperature/increase`);
+    const responseData = response.data;
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+app.get("/devices/:id/temperature/decrease", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await axios.get(`${air_conditioning_host}/devices/${id}/temperature/decrease`);
+    const responseData = response.data;
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+app.get("/devices/:id/intensity/increase", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await axios.get(`${air_conditioning_host}/devices/${id}/intensity/increase`);
+    const responseData = response.data;
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+app.get("/devices/:id/intensity/decrease", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const response = await axios.get(`${air_conditioning_host}/devices/${id}/intensity/decrease`);
+    const responseData = response.data;
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+app.listen(3000, "127.0.0.1", () => {console.log("Running on port 3000")});
