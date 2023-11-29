@@ -45,28 +45,7 @@ client.on('message', async (receivedTopic, message) => {
     jsonMessage = JSON.parse(message.toString())
     await writeDeviceStatusToDatabase(jsonMessage.current_time, jsonMessage.device_id, jsonMessage.is_on, jsonMessage.temperature, jsonMessage.intensity);
   }
-  console.log(JSON.parse(message.toString()))
 });
-
-// NAO FUNCIONAAAAAA
-// console.log('Before websocket.createServer');
-// websocket.createServer({ server }, (stream, request) => {
-//   console.log("Nem entrou")
-//   const duplexStream = websocket.createWebSocketStream(stream);
-//   client.pipe(duplexStream).pipe(client);
-
-//   client.subscribe(["room_temperature", "device_status"], (err, granted) => {
-//     if (err) {
-//         console.error('Error subscribing to topics:', err);
-//     } else {
-//         console.log('Subscribed to topics:', granted);
-//     }
-//   });
-
-//   client.on('message', async (receivedTopic, message) => {
-//     console.log(message)
-//   });
-// });
 
 
 // Device API connection
@@ -77,9 +56,6 @@ const deviceURL = `http://${deviceHost}:${devicePort}`
 // API
 app.get("/", async (req, res) => {
   console.log("Received request for URL: " + req.url);
-
-  // const test = await Test.find();
-  // console.log(test);
 
   return res.status(200).send('Hi');
 });
@@ -158,16 +134,12 @@ app.get("/device/intensity/decrease", async (req, res) => {
     if (value <= 0) {
       return res.status(422).json({ error: "Value must be greater than 0" });
     }
-    const response = await axios.get(`${deviceURL}/device/intensity/decrease?value=${value}`);
+    const response = await axios.get(`${deviceURL}/device/intensity/decrease`);
     const responseData = response.data;
-    if (response.status === 409) {
-      res.status(409).json(responseData);
-      throw new Error(responseData.message);
-    }
     res.status(200).json(responseData);
   } catch (error) {
     console.error(error);
-    res.status(error.statusCode || 500).json({ error: error.message || "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 })
 
