@@ -1,9 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
+import os
 
 from .air_conditioning import AirConditioning, DeviceIsNotTurnedOnException
 from . import schemas
-
 
 device = AirConditioning()
 
@@ -19,7 +19,7 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get('/')
 async def home():
-    return 'Hello'
+    return {'message': 'Hello World!'}
 
 
 @app.get('/devices/{id}/turnon', status_code=200, response_model=schemas.DeviceStatus)
@@ -32,15 +32,6 @@ async def turn_on_device(id: str):
 async def turn_off_device(id: str):
     device.turn_off()
     return device
-
-
-# @app.get('/devices/{id}/temperature/{new_temperature}', status_code=200, response_model=schemas.DeviceStatus)
-# async def set_new_temperature_for_device(id: str, new_temperature: int):
-#     try:
-#         device.set_temperature(new_temperature)
-#     except DeviceIsNotTurnedOnException as e:
-#         raise HTTPException(409, str(e))
-#     return device
 
 
 @app.get('/devices/{id}/temperature/increase', status_code=200, response_model=schemas.DeviceStatus)

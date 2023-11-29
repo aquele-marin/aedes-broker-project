@@ -1,8 +1,21 @@
 import paho.mqtt.client as mqtt
 import time
 import logging
+import os
 
 logging.basicConfig(level=logging.DEBUG)
+
+def set_env_variables():
+    """Quando executamos o programa pelo docker compose
+    as variaveis de ambiente ja sao setadas. Mas se estiver
+    rodando localmente precisamos setar as variaveis manualmente
+    apontando para o broker em localhost
+    """
+    if not os.getenv("BROKER_HOST"):
+        os.environ["BROKER_HOST"] = "127.0.0.1"
+        os.environ["BROKER_PORT"] = "1884"
+        os.environ["BROKER_USER"] = "broker_user"
+        os.environ["BROKER_PWD"] = "broker_pwd"
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -31,7 +44,11 @@ def kill_client(client):
     client.disconnect()
     client.loop_stop()
 
-
-client = connect_to_broker("127.0.0.1", 1884, 180, 'asd', 'asdasd')
+set_env_variables()
+client = connect_to_broker(os.getenv("BROKER_HOST"),
+                           int(os.getenv("BROKER_PORT")),
+                           180,
+                           os.getenv("BROKER_USER"),
+                           os.getenv("BROKER_PWD"))
 
 client.loop_start()
