@@ -1,11 +1,54 @@
+# Execute com o comando abaixo
+# docker-compose down && docker-compose build --no-cache && docker-compose up -d
+# Ele vai matar containers antigos, reconstruir as imagens e subir novamente
+# Dessa forma evitamos usar containers antigos sem perceber
+
 services:
   sensor:
     build: ./sensor
+    environment:
+      - BROKER_HOST=broker
+      - BROKER_PORT=1884
+      - BROKER_USER=broker_user
+      - BROKER_PWD=broker_pwd
+      - BROKER_CLIENT_ID=sensor
     ports:
       - "8000:80"
+    links:
+      - broker
   broker:
     build: ./broker
+    ports:
+      - "1884:1884"
+      - "8884:8884"
   backend:
     build: ./backend
+    environment:
+      - BROKER_HOST=broker
+      - BROKER_PORT=8884
+      - BROKER_USER=broker_user
+      - BROKER_PWD=broker_pwd
+      - BROKER_CLIENT_ID=node_backend
+      - SENSOR_API_HOST=sensor
+      - SENSOR_API_PORT=8000
+      - DATABASE_HOST=database
+      - DATABASE_PORT=27017
+      - DATABASE_USER=sensor
+      - DATABASE_PWD=sensor
+      - DATABASE_DEFAULT=sensor
+    ports:
+      - "3000:3000"
+    links:
+      - database
+      - broker
+  database:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=sensor
+      - MONGO_INITDB_ROOT_PASSWORD=sensor
   # frontend:
   #   build: ./frontend
+  #   links:
+  #     - backend
