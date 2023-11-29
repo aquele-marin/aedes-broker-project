@@ -43,6 +43,9 @@ async function writeRoomTemperatureToDatabase(sent_at, device_id, room_temperatu
       device_id: device_id,
       room_temperature: room_temperature
     });
+    await roomTemperatureDoc.save().then(roomTemp => {
+      console.log('Last room temperature:', roomTemp);
+    });
     console.log('Escreveu o log');
   } catch (error) {
     console.error('Falhou no log', error);
@@ -65,5 +68,4 @@ async function writeDeviceStatusToDatabase(sent_at, device_id, is_on, temperatur
   }
 }
 
-console.log("Rodou")
 module.exports = { mongoose, writeRoomTemperatureToDatabase, writeDeviceStatusToDatabase };
