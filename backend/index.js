@@ -4,7 +4,6 @@ const mqtt = require('mqtt');
 const websocket = require('websocket-stream');
 const WebSocket = require('ws');
 const { mongoose, writeRoomTemperatureToDatabase, writeDeviceStatusToDatabase } = require("./src/database/connection");
-const Test = require("./src/models/test");
 const cors = require("cors");
 const axios = require('axios');
 
@@ -15,67 +14,56 @@ const server = http.createServer(app); // Used for the web-socket connector
 const wss = new WebSocket.Server({ server });
 
 // Broker connection
-const brokerUrl = 'ws://127.0.0.1:8884';
+const brokerHost = process.env.BROKER_HOST || '127.0.0.1';
+const brokerPort = process.env.BROKER_PORT || '8884';
+const brokerUser = process.env.BROKER_USER || 'broker_user';
+const brokerPwd = process.env.BROKER_PWD || 'broker_pwd';
+const brokerClientName = process.env.BROKER_CLIENT_ID || 'node_backend';
+
+const brokerUrl = `ws://${brokerHost}:${brokerPort}`;
 const topics = ['room_temperature', 'device_status'];  // Topics to subscribe
 const client = mqtt.connect(brokerUrl, {
-  clientId: 'node_backend',
-  username: 'asd',
-  password: 'asdasd'
+  clientId: brokerClientName,
+  username: brokerUser,
+  password: brokerPwd
 });
 
 client.subscribe(topics, (err, granted) => {
   if (err) {
-      console.error('Error subscribing to topics:', err);
+    console.error('Error subscribing to topics:', err);
   } else {
-      console.log('Subscribed to topics:', granted);
+    console.log('Subscribed to topics:', granted);
   }
 });
 
 client.on('message', async (receivedTopic, message) => {
-  if (receivedTopic === 'room_temperature'){
+  if (receivedTopic === 'room_temperature') {
     jsonMessage = JSON.parse(message.toString())
     await writeRoomTemperatureToDatabase(jsonMessage.current_time, jsonMessage.device_id, jsonMessage.room_temperature);
   }
-  console.log(JSON.parse(message.toString()))
+  if (receivedTopic === 'device_status') {
+    jsonMessage = JSON.parse(message.toString())
+    await writeDeviceStatusToDatabase(jsonMessage.current_time, jsonMessage.device_id, jsonMessage.is_on, jsonMessage.temperature, jsonMessage.intensity);
+  }
 });
 
-// NAO FUNCIONAAAAAA
-// console.log('Before websocket.createServer');
-// websocket.createServer({ server }, (stream, request) => {
-//   console.log("Nem entrou")
-//   const duplexStream = websocket.createWebSocketStream(stream);
-//   client.pipe(duplexStream).pipe(client);
 
-//   client.subscribe(["room_temperature", "device_status"], (err, granted) => {
-//     if (err) {
-//         console.error('Error subscribing to topics:', err);
-//     } else {
-//         console.log('Subscribed to topics:', granted);
-//     }
-//   });
-
-//   client.on('message', async (receivedTopic, message) => {
-//     console.log(message)
-//   });
-// });
-
-const air_conditioning_host = "http://127.0.0.1:8000"
+// Device API connection
+const deviceHost = process.env.SENSOR_API_HOST || '127.0.0.1';
+const devicePort = process.env.SENSOR_API_PORT || '8000';
+const deviceURL = `http://${deviceHost}:${devicePort}`
 
 // API
 app.get("/", async (req, res) => {
   console.log("Received request for URL: " + req.url);
 
-  // const test = await Test.find();
-  // console.log(test);
-
   return res.status(200).send('Hi');
 });
 
 
-app.get("/devices/:id/turnon", async (req, res) => {
+app.get("/device/turnon", async (req, res) => {
   try {
-    const { id } = req.params;
-    const response = await axios.get(`${air_conditioning_host}/devices/${id}/turnon`);
+    const response = await axios.get(`${deviceURL}/device/turnon`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -84,10 +72,9 @@ app.get("/devices/:id/turnon", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/turnoff", async (req, res) => {
+app.get("/device/turnoff", async (req, res) => {
   try {
-    const { id } = req.params;
-    const response = await axios.get(`${air_conditioning_host}/devices/${id}/turnoff`);
+    const response = await axios.get(`${deviceURL}/device/turnoff`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -96,10 +83,13 @@ app.get("/devices/:id/turnoff", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/temperature/increase", async (req, res) => {
+app.get("/device/temperature/increase", async (req, res) => {
   try {
-    const { id } = req.params;
-    const response = await axios.get(`${air_conditioning_host}/devices/${id}/temperature/increase`);
+    const value = parseInt(req.query.value) || 1;
+    if (value <= 0) {
+      return res.status(422).json({ error: "Value must be greater than 0" });
+    }
+    const response = await axios.get(`${deviceURL}/device/temperature/increase`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -108,10 +98,13 @@ app.get("/devices/:id/temperature/increase", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/temperature/decrease", async (req, res) => {
+app.get("/device/temperature/decrease", async (req, res) => {
   try {
-    const { id } = req.params;
-    const response = await axios.get(`${air_conditioning_host}/devices/${id}/temperature/decrease`);
+    const value = parseInt(req.query.value) || 1;
+    if (value <= 0) {
+      return res.status(422).json({ error: "Value must be greater than 0" });
+    }
+    const response = await axios.get(`${deviceURL}/device/temperature/decrease`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -120,10 +113,13 @@ app.get("/devices/:id/temperature/decrease", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/intensity/increase", async (req, res) => {
+app.get("/device/intensity/increase", async (req, res) => {
   try {
-    const { id } = req.params;
-    const response = await axios.get(`${air_conditioning_host}/devices/${id}/intensity/increase`);
+    const value = parseInt(req.query.value) || 1;
+    if (value <= 0) {
+      return res.status(422).json({ error: "Value must be greater than 0" });
+    }
+    const response = await axios.get(`${deviceURL}/device/intensity/increase`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -132,10 +128,13 @@ app.get("/devices/:id/intensity/increase", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/intensity/decrease", async (req, res) => {
+app.get("/device/intensity/decrease", async (req, res) => {
   try {
-    const { id } = req.params;
-    const response = await axios.get(`${air_conditioning_host}/devices/${id}/intensity/decrease`);
+    const value = parseInt(req.query.value) || 1;
+    if (value <= 0) {
+      return res.status(422).json({ error: "Value must be greater than 0" });
+    }
+    const response = await axios.get(`${deviceURL}/device/intensity/decrease`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -144,4 +143,6 @@ app.get("/devices/:id/intensity/decrease", async (req, res) => {
   }
 })
 
-app.listen(3000, "127.0.0.1", () => {console.log("Running on port 3000")});
+const serverHost = process.env.HOST || '127.0.0.1';
+
+app.listen(3000, serverHost, () => { console.log("Running on port 3000") });
