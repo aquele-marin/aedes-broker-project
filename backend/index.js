@@ -85,10 +85,9 @@ app.get("/", async (req, res) => {
 });
 
 
-app.get("/devices/:id/turnon", async (req, res) => {
+app.get("/device/turnon", async (req, res) => {
   try {
-    const { id } = req.params;
-    const response = await axios.get(`${deviceURL}/devices/${id}/turnon`);
+    const response = await axios.get(`${deviceURL}/device/turnon`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -97,10 +96,9 @@ app.get("/devices/:id/turnon", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/turnoff", async (req, res) => {
+app.get("/device/turnoff", async (req, res) => {
   try {
-    const { id } = req.params;
-    const response = await axios.get(`${deviceURL}/devices/${id}/turnoff`);
+    const response = await axios.get(`${deviceURL}/device/turnoff`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -109,14 +107,13 @@ app.get("/devices/:id/turnoff", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/temperature/increase", async (req, res) => {
+app.get("/device/temperature/increase", async (req, res) => {
   try {
-    const { id } = req.params;
     const value = parseInt(req.query.value) || 1;
     if (value <= 0) {
       return res.status(422).json({ error: "Value must be greater than 0" });
     }
-    const response = await axios.get(`${deviceURL}/devices/${id}/temperature/increase`);
+    const response = await axios.get(`${deviceURL}/device/temperature/increase`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -125,14 +122,13 @@ app.get("/devices/:id/temperature/increase", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/temperature/decrease", async (req, res) => {
+app.get("/device/temperature/decrease", async (req, res) => {
   try {
-    const { id } = req.params;
     const value = parseInt(req.query.value) || 1;
     if (value <= 0) {
       return res.status(422).json({ error: "Value must be greater than 0" });
     }
-    const response = await axios.get(`${deviceURL}/devices/${id}/temperature/decrease`);
+    const response = await axios.get(`${deviceURL}/device/temperature/decrease`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -141,14 +137,13 @@ app.get("/devices/:id/temperature/decrease", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/intensity/increase", async (req, res) => {
+app.get("/device/intensity/increase", async (req, res) => {
   try {
-    const { id } = req.params;
     const value = parseInt(req.query.value) || 1;
     if (value <= 0) {
       return res.status(422).json({ error: "Value must be greater than 0" });
     }
-    const response = await axios.get(`${deviceURL}/devices/${id}/intensity/increase`);
+    const response = await axios.get(`${deviceURL}/device/intensity/increase`);
     const responseData = response.data;
     res.status(200).json(responseData);
   } catch (error) {
@@ -157,14 +152,13 @@ app.get("/devices/:id/intensity/increase", async (req, res) => {
   }
 })
 
-app.get("/devices/:id/intensity/decrease", async (req, res) => {
+app.get("/device/intensity/decrease", async (req, res) => {
   try {
-    const { id } = req.params;
     const value = parseInt(req.query.value) || 1;
     if (value <= 0) {
       return res.status(422).json({ error: "Value must be greater than 0" });
     }
-    const response = await axios.get(`${deviceURL}/devices/${id}/intensity/decrease?value=${value}`);
+    const response = await axios.get(`${deviceURL}/device/intensity/decrease?value=${value}`);
     const responseData = response.data;
     if (response.status === 409) {
       res.status(409).json(responseData);
