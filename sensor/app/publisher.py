@@ -1,8 +1,12 @@
+"""
+Neste arquivo fica a criação da conexão com o Broker. Para consumi-lo, apenas importe a variavel 'client'
+"""
 import paho.mqtt.client as mqtt
 import time
 import logging
 import os
 
+# Apenas serve para printar os logs com mais detalhes
 logging.basicConfig(level=logging.DEBUG)
 
 def set_env_variables():
@@ -16,6 +20,7 @@ def set_env_variables():
         os.environ["BROKER_PORT"] = "1884"
         os.environ["BROKER_USER"] = "broker_user"
         os.environ["BROKER_PWD"] = "broker_pwd"
+        os.environ["BROKER_CLIENT_ID"] = "sensor"
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -29,9 +34,9 @@ def on_disconnect(client, userdata, rc):
         print(f"Unexpected disconnection. Result code: {rc}")
 
 
-def connect_to_broker(host, port, keep_alive, usename, password) -> mqtt.Client:
-    client = mqtt.Client()
-    client.username_pw_set(usename, password)
+def connect_to_broker(host, port, keep_alive, usename, password, client_id) -> mqtt.Client:
+    client = mqtt.Client(client_id)
+    client.username_pw_set(usename, password) # Passa credenciais
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
     client.enable_logger()
@@ -49,6 +54,7 @@ client = connect_to_broker(os.getenv("BROKER_HOST"),
                            int(os.getenv("BROKER_PORT")),
                            180,
                            os.getenv("BROKER_USER"),
-                           os.getenv("BROKER_PWD"))
+                           os.getenv("BROKER_PWD"),
+                           os.environ["BROKER_CLIENT_ID"])
 
 client.loop_start()
