@@ -30,18 +30,18 @@ const client = mqtt.connect(brokerUrl, {
 
 client.subscribe(topics, (err, granted) => {
   if (err) {
-      console.error('Error subscribing to topics:', err);
+    console.error('Error subscribing to topics:', err);
   } else {
-      console.log('Subscribed to topics:', granted);
+    console.log('Subscribed to topics:', granted);
   }
 });
 
 client.on('message', async (receivedTopic, message) => {
-  if (receivedTopic === 'room_temperature'){
+  if (receivedTopic === 'room_temperature') {
     jsonMessage = JSON.parse(message.toString())
     await writeRoomTemperatureToDatabase(jsonMessage.current_time, jsonMessage.device_id, jsonMessage.room_temperature);
   }
-  if (receivedTopic === 'device_status'){
+  if (receivedTopic === 'device_status') {
     jsonMessage = JSON.parse(message.toString())
     await writeDeviceStatusToDatabase(jsonMessage.current_time, jsonMessage.device_id, jsonMessage.is_on, jsonMessage.temperature, jsonMessage.intensity);
   }
@@ -143,4 +143,6 @@ app.get("/device/intensity/decrease", async (req, res) => {
   }
 })
 
-app.listen(3000, "127.0.0.1", () => {console.log("Running on port 3000")});
+const serverHost = process.env.HOST || '127.0.0.1';
+
+app.listen(3000, serverHost, () => { console.log("Running on port 3000") });
